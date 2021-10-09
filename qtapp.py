@@ -5,6 +5,7 @@ import urllib.request
 import pathlib
 import logging
 import io
+import webbrowser
 
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog
 from PySide2.QtGui import QPixmap, QIcon
@@ -86,6 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.bestresbtn_2.clicked.connect(self.radioButtonManager)
         self.actionChange_Downloads_Location.triggered.connect(lambda: self.qactions(1))
         self.commandLinkButton.clicked.connect(self.download_handler)
+        self.actionAbout.triggered.connect(lambda: webbrowser.open("https://github.com/SiniKraft/YoutubeDownloader"
+                                                                   "#youtubedownloader"))
+        self.actionExit.triggered.connect(self.close)
 
     def on_checkbox_change(self, cknm):
         if cknm == 1:
@@ -271,6 +275,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                * 1000)
             except:
                 pass
+        print("Finished !")
 
     def qactions(self, num):
         if num == 1:
