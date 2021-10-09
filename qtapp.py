@@ -244,12 +244,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.widget_2.setDisabled(True)
         self.checkBox.setDisabled(True)
         self.checkBox_2.setDisabled(True)
+        self.progressBar.setMaximum(1000)
         if self.checkBox.isChecked():
             if self.bestresbtn.isChecked():
                 self.thread_download_vid = threading.Thread(target=self.dl_thread, args=(
                     self.ys.filter(type='video').order_by("resolution").desc().first(), "video_",))
                 self.thread_download_vid.start()
-                self.progressBar.setMaximum(1000)
+                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread)
+                self.thread_listen_bar.start()
+            else:
+                self.thread_download_vid = threading.Thread(target=self.dl_thread, args=(
+                    self.ys.get_by_itag(self.vid_select_itag), "video_",))
+                self.thread_download_vid.start()
                 self.thread_listen_bar = threading.Thread(target=self.bar_update_thread)
                 self.thread_listen_bar.start()
 
