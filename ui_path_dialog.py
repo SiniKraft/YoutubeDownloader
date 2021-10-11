@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'path_dialognRADyW.ui'
+## Form generated from reading UI file 'path_dialogYPxuHg.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -48,12 +48,22 @@ class Ui_PathDialog(object):
 
         self.verticalLayout.addItem(self.verticalSpacer)
 
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
+        self.pushButton = QPushButton(self.verticalLayoutWidget)
+        self.pushButton.setObjectName(u"pushButton")
+
+        self.horizontalLayout.addWidget(self.pushButton)
+
         self.buttonBox = QDialogButtonBox(self.verticalLayoutWidget)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setOrientation(Qt.Horizontal)
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
 
-        self.verticalLayout.addWidget(self.buttonBox)
+        self.horizontalLayout.addWidget(self.buttonBox)
+
+
+        self.verticalLayout.addLayout(self.horizontalLayout)
 
 
         self.retranslateUi(PathDialog)
@@ -66,5 +76,6 @@ class Ui_PathDialog(object):
     def retranslateUi(self, PathDialog):
         PathDialog.setWindowTitle(QCoreApplication.translate("PathDialog", u"Dialog", None))
         self.label.setText(QCoreApplication.translate("PathDialog", u"Enter where you want to download videos :", None))
+        self.pushButton.setText(QCoreApplication.translate("PathDialog", u"Open Folder ...", None))
     # retranslateUi
 

@@ -1,24 +1,25 @@
 import sys
 import os
 import threading
+import time
+import tkinter.messagebox
 import urllib.request
 import pathlib
 import logging
 import io
 import webbrowser
 
-from PySide2.QtWidgets import QApplication, QMainWindow, QDialog
+from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide2.QtGui import QPixmap, QIcon
+from PySide2.QtCore import Qt, QObject, Slot, Signal
 
 from ui_main_window import Ui_MainWindow
 from ui_path_dialog import Ui_PathDialog
 
 from pytube import YouTube
 
-
 log_stream = io.StringIO()
 logging.basicConfig(stream=log_stream, level=logging.DEBUG, format="%(message)s")
-
 
 pref_path = os.path.join(str(pathlib.Path().home()), ".NicklorYoutubeDownloader/")
 os.makedirs(pref_path, exist_ok=True)
@@ -37,6 +38,42 @@ else:
         file.close()
 
 
+@Slot(str)
+def exec_sth(value):
+    exec(value)
+
+
+@Slot(int)
+def update_bar(value):
+    main_window.progressBar.setValue(value)
+
+
+@Slot(str)
+def _show_msg(value):
+    msgbox = QMessageBox(parent=main_window)
+    msgbox.setIcon(QMessageBox.Information)
+    msgbox.setWindowTitle("Youtube Downloader by Nicklor")
+    msgbox.setText(value)
+    msgbox.exec_()
+
+
+
+class Communicate(QObject):
+    # signal_str = Signal(str)
+    signal_int = Signal(int)
+    signal_str = Signal(str)
+    signal_str_2 = Signal(str)
+
+    def use_signal_str(self, value):
+        self.signal_str.emit(value)
+
+    def use_signal_int(self, value):
+        self.signal_int.emit(value)
+
+    def show_msg(self, value):
+        self.signal_str_2.emit(value)
+
+
 class PathDialog(QDialog, Ui_PathDialog):
     def __init__(self, parent):
         QDialog.__init__(self, parent=parent)
@@ -44,12 +81,18 @@ class PathDialog(QDialog, Ui_PathDialog):
         self.setWindowTitle("Downloads location")
         self.lineEdit.setText(parent.path_preference)
         self.buttonBox.accepted.connect(lambda: self.save_pref(parent))
+        self.pushButton.clicked.connect(self.open_folder)
 
     def save_pref(self, parent):
         parent.path_preference = self.lineEdit.text()
         with open(os.path.join(pref_path, "pathPreference"), "w+") as file__:
-            file__.write(path_preference)
+            file__.write(parent.path_preference)
             file__.close()
+
+    def open_folder(self):
+        selected_path = QFileDialog.getExistingDirectory(self, "Choose a Folder", path_preference)
+        if not selected_path == "":
+            self.lineEdit.setText(selected_path)
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -71,6 +114,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.done_video = False
         self.lineEdit.setFocus()
         self.clearButton.hide()
+        self.dl_mode = 0
+        self.thread_download_aud = None
+        self.thread_download_vid = None
+        self.thread_listen_bar = None
+        self.signals = Communicate()
+        self.signals.signal_int.connect(update_bar)
+        self.signals.signal_str.connect(exec_sth)
+        self.signals.signal_str_2.connect(_show_msg)
 
     def setup_connections(self):
         self.checkBox.toggled.connect(lambda: self.on_checkbox_change(1))
@@ -249,41 +300,97 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.checkBox.setDisabled(True)
         self.checkBox_2.setDisabled(True)
         self.progressBar.setMaximum(1000)
-        if self.checkBox.isChecked():
+        if self.checkBox.isChecked() and self.checkBox_2.isChecked():
+            self.dl_mode = 2  # 1: video only 2 : video + audio 3 : audio only
+        elif self.checkBox.isChecked():
+            self.dl_mode = 1  # video only
+        elif self.checkBox_2.isChecked():
+            self.dl_mode = 3  # audio only
+        if self.dl_mode == 1 or self.dl_mode == 2:
+            if self.dl_mode == 2:
+                prefix = "video_"
+            else:
+                prefix = ""
             if self.bestresbtn.isChecked():
                 self.thread_download_vid = threading.Thread(target=self.dl_thread, args=(
-                    self.ys.filter(type='video').order_by("resolution").desc().first(), "video_",))
+                    self.ys.filter(type='video').order_by("resolution").desc().first(), prefix,))
                 self.thread_download_vid.start()
-                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread)
+                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread, args=(
+                    self.ys.filter(type='video').order_by("resolution").desc().first().filesize,))
                 self.thread_listen_bar.start()
             else:
                 self.thread_download_vid = threading.Thread(target=self.dl_thread, args=(
-                    self.ys.get_by_itag(self.vid_select_itag), "video_",))
+                    self.ys.get_by_itag(self.vid_select_itag), prefix,))
                 self.thread_download_vid.start()
-                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread)
+                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
+                    self.vid_select_itag).filesize,))
+                self.thread_listen_bar.start()
+        elif self.dl_mode == 3:
+            if self.bestresbtn_2.isChecked():
+                self.thread_download_aud = threading.Thread(target=self.dl_thread, args=(
+                    self.ys.filter(type='audio').order_by("abr").desc().first(), "",))
+                self.thread_download_aud.start()
+                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread, args=(
+                    self.ys.filter(type='audio').order_by("abr").desc().first().filesize, "audio",))
+                self.thread_listen_bar.start()
+            else:
+                self.thread_download_aud = threading.Thread(target=self.dl_thread, args=(
+                    self.ys.get_by_itag(self.aud_select_itag), "",))
+                self.thread_download_aud.start()
+                self.thread_listen_bar = threading.Thread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
+                    self.aud_select_itag).filesize, "audio",))
                 self.thread_listen_bar.start()
 
     def dl_thread(self, ys, prefix):
         ys.download(output_path=self.path_preference, filename_prefix=prefix)
 
-    def bar_update_thread(self):
-        while self.thread_download_vid.is_alive():
+    def bar_update_thread(self, filesize, _type='video'):
+        def check_if_alive():
+            if _type == "video":
+                if self.thread_download_vid.is_alive():
+                    return True
+                return False
+            elif _type == "audio":
+                if self.thread_download_aud.is_alive():
+                    return True
+                return False
+
+        while check_if_alive():
+            time.sleep(0.1)
             try:
-                self.progressBar.setValue((1 - (int(log_stream.getvalue().split("\n")[-2]
-                                                    .split("download remaining: ")[-1])) /
-                                          self.ys.filter(type='video').order_by("resolution").desc().first().filesize)
-                                               * 1000)
-            except:
-                pass
+                to_update = int((1 - (int(log_stream.getvalue().split("\n")[-2]
+                                          .split("download remaining: ")[-1])) / filesize) * 1000)
+                if not (to_update < 0 or to_update > 1000):
+                    self.signals.use_signal_int(to_update)
+            except Exception as e:
+                print(e)
         print("Finished !")
+        self.signals.use_signal_int(999)
+        if self.dl_mode == 1:
+            self.on_dl_finish()
 
     def qactions(self, num):
         if num == 1:
             path_dialog = PathDialog(self)
             path_dialog.exec_()
 
+    def on_dl_finish(self):
+        self.signals.use_signal_int(0)
+        self.signals.use_signal_str("main_window.clearButton.setDisabled(False)")
+        self.signals.use_signal_str("main_window.commandLinkButton.setDisabled(False)")
+        self.signals.use_signal_str("main_window.lineEdit.setDisabled(False)")
+        self.signals.use_signal_str("main_window.SubmitButton.setDisabled(False)")
+        self.signals.use_signal_str("main_window.delButton.setDisabled(False)")
+        self.signals.use_signal_str("main_window.widget.setDisabled(False)")
+        self.signals.use_signal_str("main_window.widget_2.setDisabled(False)")
+        self.signals.use_signal_str("main_window.checkBox.setDisabled(False)")
+        self.signals.use_signal_str("main_window.checkBox_2.setDisabled(False)")
+        self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")[-2])
+
 
 app = QApplication(sys.argv)
+
+app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
 
 main_window = MainWindow()
 
