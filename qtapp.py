@@ -9,7 +9,7 @@ import logging
 import io
 import webbrowser
 
-from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QPushButton, QAbstractButton
+from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QObject, Slot, Signal
 
@@ -48,6 +48,7 @@ trace."""
     return self.localtrace
   def kill(self):
     self.killed = True
+
 
 log_stream = io.StringIO()
 logging.basicConfig(stream=log_stream, level=logging.DEBUG, format="%(message)s")
@@ -210,6 +211,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.actionSkip_download.setChecked(True)
 
     def closeEvent(self, event):
+        should_close = True
         try:
             if self.thread_download_vid.is_alive:
                 msgbox = QMessageBox(parent=main_window)
@@ -219,10 +221,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                "in background ?")
                 msgbox.setStandardButtons(QMessageBox.Discard | QMessageBox.Yes | QMessageBox.Cancel |
                                           QMessageBox.Ignore)
+                cancel_dl_btn = msgbox.button(QMessageBox.Discard)
+                cancel_dl_btn.setText("Cancel Download and close")
+                stop_dl_btn = msgbox.button(QMessageBox.Yes)
+                stop_dl_btn.setText("Stop Download and close")
+                continue_dl = msgbox.button(QMessageBox.Ignore)
+                continue_dl.setText("Continue Download in background and close")
+                cancel_close_btn = msgbox.button(QMessageBox.Cancel)
+                cancel_close_btn.setText("Cancel close")
                 msgbox.exec_()
+                if msgbox.clickedButton() == cancel_close_btn:
+                    should_close = False
+                elif msgbox.clickedButton() == cancel_dl_btn:
+                    self.cancel_download()
+                elif msgbox.clickedButton() == stop_dl_btn:
+                    try:
+                        self.thread_listen_bar.kill()
+                    except Exception as e:
+                        print(e)
+                    try:
+                        self.thread_download_vid.kill()
+                    except Exception as e:
+                        print(e)
+                    try:
+                        self.thread_download_aud.kill()
+                    except Exception as e:
+                        print(e)
         except Exception as e:
             print(e)
-        event.ignore()
+        if not should_close:
+            event.ignore()
+        else:
+            event.accept()
 
     def setup_connections(self):
         self.checkBox.toggled.connect(lambda: self.on_checkbox_change(1))
@@ -468,7 +498,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.thread_listen_bar.start()
 
     def dl_thread(self, ys, prefix):
-        self.currentDownloadName = ys.default_filename
+        self.currentDownloadName = prefix + ys.default_filename
         ys.download(output_path=self.path_preference, filename_prefix=prefix)
 
     def bar_update_thread(self, filesize, _type='video'):
@@ -571,7 +601,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             os.remove(os.path.join(self.path_preference, self.currentDownloadName))
         except Exception as e:
             print(e)
-            pass
+
         logging.log(logging.WARN, "Download canceled by user !")
         self.on_dl_finish()
 
