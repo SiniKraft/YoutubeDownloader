@@ -9,7 +9,7 @@ import logging
 import io
 import webbrowser
 
-from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
+from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QPushButton, QAbstractButton
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QObject, Slot, Signal
 
@@ -56,7 +56,6 @@ pref_path = os.path.join(str(pathlib.Path().home()), ".NicklorYoutubeDownloader/
 os.makedirs(pref_path, exist_ok=True)
 if sys.platform == "win32":
     import ctypes
-
     ctypes.windll.kernel32.SetFileAttributesW(pref_path, 0x02)
 
 if not os.path.isfile(pref_path + "pathPreference"):
@@ -106,19 +105,26 @@ def update_bar(value):
 
 
 @Slot(str)
-def _show_msg(value):
-    msgbox = QMessageBox(parent=main_window)
-    msgbox.setIcon(QMessageBox.Information)
-    msgbox.setWindowTitle("Youtube Downloader by Nicklor")
-    msgbox.setText(value)
-    msgbox.exec_()
+def _show_msg(value, type="info"):
+    if type == "info":
+        msgbox = QMessageBox(parent=main_window)
+        msgbox.setIcon(QMessageBox.Information)
+        msgbox.setWindowTitle("Youtube Downloader by Nicklor")
+        msgbox.setText(value)
+        msgbox.exec_()
+    elif type == "error":
+        msgbox = QMessageBox(parent=main_window)
+        msgbox.setIcon(QMessageBox.Critical)
+        msgbox.setWindowTitle("Youtube Downloader by Nicklor")
+        msgbox.setText("Error : " + value)
+        msgbox.exec_()
 
 
 class Communicate(QObject):
     # signal_str = Signal(str)
     signal_int = Signal(int)
     signal_str = Signal(str)
-    signal_str_2 = Signal(str)
+    signal_str_2 = Signal(str, str)
 
     def use_signal_str(self, value):
         self.signal_str.emit(value)
@@ -126,8 +132,8 @@ class Communicate(QObject):
     def use_signal_int(self, value):
         self.signal_int.emit(value)
 
-    def show_msg(self, value):
-        self.signal_str_2.emit(value)
+    def show_msg(self, value, type="info"):
+        self.signal_str_2.emit(value, type)
 
 
 class ConvertDialog(QDialog, Ui_ConvertDialog):
@@ -202,6 +208,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.actionReplace_file.setChecked(True)
         elif self.conv_settings[2] == 2:
             self.actionSkip_download.setChecked(True)
+
+    def closeEvent(self, event):
+        try:
+            if self.thread_download_vid.is_alive:
+                msgbox = QMessageBox(parent=main_window)
+                msgbox.setIcon(QMessageBox.Question)
+                msgbox.setWindowTitle("Youtube Downloader by Nicklor")
+                msgbox.setText("Background download is running.\nDo you want to stop, cancel or continue downloading "
+                               "in background ?")
+                msgbox.setStandardButtons(QMessageBox.Discard | QMessageBox.Yes | QMessageBox.Cancel |
+                                          QMessageBox.Ignore)
+                msgbox.exec_()
+        except Exception as e:
+            print(e)
+        event.ignore()
 
     def setup_connections(self):
         self.checkBox.toggled.connect(lambda: self.on_checkbox_change(1))
@@ -284,12 +305,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.listWidget_2.addItems(tmplist_audio)
             self.on_submit_btn(True)
         except Exception as e:
-            import tkinter.messagebox
-            import tkinter
-            win = tkinter.Tk()
-            win.withdraw()
-            tkinter.messagebox.showerror("Error", str(e))
-            win.destroy()
+            # import tkinter.messagebox
+            # import tkinter
+            # win = tkinter.Tk()
+            # win.withdraw()
+            # tkinter.messagebox.showerror("Error", str(e))
+            # win.destroy()
+            self.signals.show_msg(str(e), "error")
             self.on_submit_btn(True, True)
 
     def on_submit_btn(self, is_end, error=False):
@@ -544,11 +566,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.thread_listen_bar.kill()
         except Exception as e:
             print(e)
+        try:
+            time.sleep(2)
+            os.remove(os.path.join(self.path_preference, self.currentDownloadName))
+        except Exception as e:
+            print(e)
+            pass
         logging.log(logging.WARN, "Download canceled by user !")
         self.on_dl_finish()
 
 
     def on_dl_finish(self):
+        self.signals.use_signal_str("main_window.cancelDownloadButton.hide()")
         self.signals.use_signal_str("main_window.progressBar.setMaximum(1000)")
         self.signals.use_signal_int(0)
         self.signals.use_signal_str("main_window.conv_widget.setDisabled(False)")
