@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_windowKFzqPJ.ui'
+## Form generated from reading UI file 'main_windowAfcQiF.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -36,6 +36,16 @@ class Ui_MainWindow(object):
         self.actionSkip_download = QAction(MainWindow)
         self.actionSkip_download.setObjectName(u"actionSkip_download")
         self.actionSkip_download.setCheckable(True)
+        self.actionAbout_Qt = QAction(MainWindow)
+        self.actionAbout_Qt.setObjectName(u"actionAbout_Qt")
+        self.actionSystem = QAction(MainWindow)
+        self.actionSystem.setObjectName(u"actionSystem")
+        self.actionFusion = QAction(MainWindow)
+        self.actionFusion.setObjectName(u"actionFusion")
+        self.actionDark_Fusion = QAction(MainWindow)
+        self.actionDark_Fusion.setObjectName(u"actionDark_Fusion")
+        self.actionDark_Orange = QAction(MainWindow)
+        self.actionDark_Orange.setObjectName(u"actionDark_Orange")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.listWidget = QListWidget(self.centralwidget)
@@ -243,6 +253,8 @@ class Ui_MainWindow(object):
         self.menuSettings.setObjectName(u"menuSettings")
         self.menuCheck_If_File_Already_Exists = QMenu(self.menuSettings)
         self.menuCheck_If_File_Already_Exists.setObjectName(u"menuCheck_If_File_Already_Exists")
+        self.menuTheme = QMenu(self.menuSettings)
+        self.menuTheme.setObjectName(u"menuTheme")
         MainWindow.setMenuBar(self.menuBar)
 
         self.menuBar.addAction(self.menuSettings.menuAction())
@@ -250,9 +262,15 @@ class Ui_MainWindow(object):
         self.menuSettings.addAction(self.actionAbout)
         self.menuSettings.addAction(self.actionExit)
         self.menuSettings.addAction(self.menuCheck_If_File_Already_Exists.menuAction())
+        self.menuSettings.addAction(self.menuTheme.menuAction())
+        self.menuSettings.addAction(self.actionAbout_Qt)
         self.menuCheck_If_File_Already_Exists.addAction(self.actionAsk_what_to_do)
         self.menuCheck_If_File_Already_Exists.addAction(self.actionReplace_file)
         self.menuCheck_If_File_Already_Exists.addAction(self.actionSkip_download)
+        self.menuTheme.addAction(self.actionSystem)
+        self.menuTheme.addAction(self.actionFusion)
+        self.menuTheme.addAction(self.actionDark_Fusion)
+        self.menuTheme.addAction(self.actionDark_Orange)
 
         self.retranslateUi(MainWindow)
 
@@ -270,6 +288,11 @@ class Ui_MainWindow(object):
         self.actionAsk_what_to_do.setText(QCoreApplication.translate("MainWindow", u"Ask what to do", None))
         self.actionReplace_file.setText(QCoreApplication.translate("MainWindow", u"Replace file", None))
         self.actionSkip_download.setText(QCoreApplication.translate("MainWindow", u"Skip download", None))
+        self.actionAbout_Qt.setText(QCoreApplication.translate("MainWindow", u"About Qt", None))
+        self.actionSystem.setText(QCoreApplication.translate("MainWindow", u"System", None))
+        self.actionFusion.setText(QCoreApplication.translate("MainWindow", u"Fusion", None))
+        self.actionDark_Fusion.setText(QCoreApplication.translate("MainWindow", u"Dark Fusion", None))
+        self.actionDark_Orange.setText(QCoreApplication.translate("MainWindow", u"Dark Orange", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Youtube Downloader", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"by Nicklor", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Your URL : ", None))
@@ -297,5 +320,6 @@ class Ui_MainWindow(object):
         self.cancelDownloadButton.setText(QCoreApplication.translate("MainWindow", u"Cancel Download", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.menuCheck_If_File_Already_Exists.setTitle(QCoreApplication.translate("MainWindow", u"Check If File Already Exists", None))
+        self.menuTheme.setTitle(QCoreApplication.translate("MainWindow", u"Theme", None))
     # retranslateUi
 

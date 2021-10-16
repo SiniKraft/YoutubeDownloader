@@ -684,10 +684,21 @@
      <addaction name="actionReplace_file"/>
      <addaction name="actionSkip_download"/>
     </widget>
+    <widget class="QMenu" name="menuTheme">
+     <property name="title">
+      <string>Theme</string>
+     </property>
+     <addaction name="actionSystem"/>
+     <addaction name="actionFusion"/>
+     <addaction name="actionDark_Fusion"/>
+     <addaction name="actionDark_Orange"/>
+    </widget>
     <addaction name="actionChange_Downloads_Location"/>
     <addaction name="actionAbout"/>
     <addaction name="actionExit"/>
     <addaction name="menuCheck_If_File_Already_Exists"/>
+    <addaction name="menuTheme"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
@@ -728,6 +739,31 @@
    </property>
    <property name="text">
     <string>Skip download</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt</string>
+   </property>
+  </action>
+  <action name="actionSystem">
+   <property name="text">
+    <string>System</string>
+   </property>
+  </action>
+  <action name="actionFusion">
+   <property name="text">
+    <string>Fusion</string>
+   </property>
+  </action>
+  <action name="actionDark_Fusion">
+   <property name="text">
+    <string>Dark Fusion</string>
+   </property>
+  </action>
+  <action name="actionDark_Orange">
+   <property name="text">
+    <string>Dark Orange</string>
    </property>
   </action>
  </widget>
