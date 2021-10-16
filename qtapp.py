@@ -86,6 +86,8 @@ if not os.path.isfile(pref_path + "convSettings"):
         file.write(conv_settings)
         file.close()
     conv_settings_l = conv_settings.split("\n")[-1].split(",")
+    conv_settings_l[0] = conv_settings_l[0] == "True"
+    conv_settings_l[2] = int(conv_settings_l[2])
 else:
     with open(os.path.join(pref_path, "convSettings"), "r") as file:
         conv_settings = file.read()
