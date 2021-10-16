@@ -693,12 +693,15 @@
      <addaction name="actionDark_Fusion"/>
      <addaction name="actionDark_Orange"/>
      <addaction name="actionOld_Windows"/>
+     <addaction name="actionLight_Material"/>
+     <addaction name="actionDark_Material"/>
     </widget>
-    <addaction name="actionChange_Downloads_Location"/>
     <addaction name="actionAbout"/>
     <addaction name="actionExit"/>
+    <addaction name="actionChange_Downloads_Location"/>
     <addaction name="menuCheck_If_File_Already_Exists"/>
     <addaction name="menuTheme"/>
+    <addaction name="actionInstall_extension_compatibility"/>
     <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuSettings"/>
@@ -785,6 +788,27 @@
    </property>
    <property name="text">
     <string>Old Windows</string>
+   </property>
+  </action>
+  <action name="actionLight_Material">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Light Material</string>
+   </property>
+  </action>
+  <action name="actionDark_Material">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Dark Material</string>
+   </property>
+  </action>
+  <action name="actionInstall_extension_compatibility">
+   <property name="text">
+    <string>Install extension compatibility</string>
    </property>
   </action>
  </widget>

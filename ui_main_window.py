@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_windowfHCULY.ui'
+## Form generated from reading UI file 'main_windowzCwHqT.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -53,6 +53,14 @@ class Ui_MainWindow(object):
         self.actionOld_Windows = QAction(MainWindow)
         self.actionOld_Windows.setObjectName(u"actionOld_Windows")
         self.actionOld_Windows.setCheckable(True)
+        self.actionLight_Material = QAction(MainWindow)
+        self.actionLight_Material.setObjectName(u"actionLight_Material")
+        self.actionLight_Material.setCheckable(True)
+        self.actionDark_Material = QAction(MainWindow)
+        self.actionDark_Material.setObjectName(u"actionDark_Material")
+        self.actionDark_Material.setCheckable(True)
+        self.actionInstall_extension_compatibility = QAction(MainWindow)
+        self.actionInstall_extension_compatibility.setObjectName(u"actionInstall_extension_compatibility")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.listWidget = QListWidget(self.centralwidget)
@@ -265,11 +273,12 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menuBar)
 
         self.menuBar.addAction(self.menuSettings.menuAction())
-        self.menuSettings.addAction(self.actionChange_Downloads_Location)
         self.menuSettings.addAction(self.actionAbout)
         self.menuSettings.addAction(self.actionExit)
+        self.menuSettings.addAction(self.actionChange_Downloads_Location)
         self.menuSettings.addAction(self.menuCheck_If_File_Already_Exists.menuAction())
         self.menuSettings.addAction(self.menuTheme.menuAction())
+        self.menuSettings.addAction(self.actionInstall_extension_compatibility)
         self.menuSettings.addAction(self.actionAbout_Qt)
         self.menuCheck_If_File_Already_Exists.addAction(self.actionAsk_what_to_do)
         self.menuCheck_If_File_Already_Exists.addAction(self.actionReplace_file)
@@ -279,6 +288,8 @@ class Ui_MainWindow(object):
         self.menuTheme.addAction(self.actionDark_Fusion)
         self.menuTheme.addAction(self.actionDark_Orange)
         self.menuTheme.addAction(self.actionOld_Windows)
+        self.menuTheme.addAction(self.actionLight_Material)
+        self.menuTheme.addAction(self.actionDark_Material)
 
         self.retranslateUi(MainWindow)
 
@@ -302,6 +313,9 @@ class Ui_MainWindow(object):
         self.actionDark_Fusion.setText(QCoreApplication.translate("MainWindow", u"Dark Fusion", None))
         self.actionDark_Orange.setText(QCoreApplication.translate("MainWindow", u"Dark Orange", None))
         self.actionOld_Windows.setText(QCoreApplication.translate("MainWindow", u"Old Windows", None))
+        self.actionLight_Material.setText(QCoreApplication.translate("MainWindow", u"Light Material", None))
+        self.actionDark_Material.setText(QCoreApplication.translate("MainWindow", u"Dark Material", None))
+        self.actionInstall_extension_compatibility.setText(QCoreApplication.translate("MainWindow", u"Install extension compatibility", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Youtube Downloader", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"by Nicklor", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Your URL : ", None))

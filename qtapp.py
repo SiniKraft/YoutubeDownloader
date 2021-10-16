@@ -10,7 +10,7 @@ import webbrowser
 
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide2.QtGui import QPixmap, QIcon
-from PySide2.QtCore import Qt, QObject, Slot, Signal
+from PySide2.QtCore import Qt, QObject, Slot, Signal, QRect, QSize
 
 from themes import set_style
 
@@ -23,7 +23,7 @@ from pytube import YouTube
 
 class KThread(threading.Thread):
     """A subclass of KThread, with a kill()
-method."""
+    method."""
 
     def __init__(self, *args, **keywords):
         threading.Thread.__init__(self, *args, **keywords)
@@ -37,7 +37,7 @@ method."""
 
     def __run(self):
         """Hacked run function, which installs the
-trace."""
+        trace."""
         sys.settrace(self.globaltrace)
         self.__run_backup()
         self.run = self.__run_backup
@@ -183,6 +183,12 @@ class PathDialog(QDialog, Ui_PathDialog):
         self.buttonBox.accepted.connect(lambda: self.save_pref(parent))
         self.pushButton.clicked.connect(self.open_folder)
 
+        if "material" in selected_theme:
+            self.setMinimumSize(QSize(362, 151))
+            self.setMaximumSize(QSize(362, 151))
+            self.resize(362, 151)
+            self.verticalLayoutWidget.setGeometry(QRect(20, 9, 321, 121))
+
     def save_pref(self, parent: QMainWindow):
         parent.path_preference = self.lineEdit.text()
         with open(os.path.join(pref_path, "pathPreference"), "w+") as file__:
@@ -237,6 +243,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.actionReplace_file.setChecked(True)
         elif self.conv_settings[2] == 2:
             self.actionSkip_download.setChecked(True)
+
+        if "material" in selected_theme:
+            self.lineEdit.setGeometry(QRect(130, 220, 451, 31))
+
+        if not sys.platform == "win32":
+            self.actionInstall_extension_compatibility.setDisabled(True)
+
 
     def closeEvent(self, event):
         should_close = True
@@ -313,6 +326,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionDark_Fusion.triggered.connect(lambda: self.change_theme("dark_fusion"))
         self.actionDark_Orange.triggered.connect(lambda: self.change_theme("darkorange"))
         self.actionOld_Windows.triggered.connect(lambda: self.change_theme("windows"))
+        self.actionLight_Material.triggered.connect(lambda: self.change_theme("light_material"))
+        self.actionDark_Material.triggered.connect(lambda: self.change_theme("dark_material"))
 
     def change_theme(self, theme: str):
         self.theme_actions_mgr()
@@ -325,6 +340,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionFusion.setChecked(False)
         self.actionDark_Fusion.setChecked(False)
         self.actionDark_Orange.setChecked(False)
+        self.actionLight_Material.setChecked(False)
+        self.actionDark_Material.setChecked(False)
         if selected_theme == "system":
             self.actionSystem.setChecked(True)
         elif selected_theme == "fusion":
@@ -335,6 +352,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.actionDark_Orange.setChecked(True)
         elif selected_theme == "windows":
             self.actionOld_Windows.setChecked(True)
+        elif selected_theme == "light_material":
+            self.actionLight_Material.setChecked(True)
+        elif selected_theme == "dark_material":
+            self.actionDark_Material.setChecked(True)
 
     def checkbox_3_check(self):
         if self.checkBox_3.isChecked():

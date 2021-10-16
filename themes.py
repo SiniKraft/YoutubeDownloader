@@ -1,7 +1,9 @@
 from PySide2.QtGui import QPalette, QColor
 from PySide2.QtCore import Qt, QFile, QTextStream, qRegisterResourceData, qUnregisterResourceData
 import PySide2.QtWidgets
-# Start of darkorange style resources#
+from qt_material import apply_stylesheet
+
+# Start of darkorange style resources #
 
 # Resource object code (Python 3)
 # Created by: object code
@@ -494,6 +496,10 @@ def set_style(app: PySide2.QtWidgets.QApplication, style: str):
         app.setStyleSheet(stream.readAll())
     elif style == "windows":
         app.setStyle("Windows")
+    elif style == "dark_material":
+        apply_stylesheet(app, theme="dark_blue.xml")
+    elif style == "light_material":
+        apply_stylesheet(app, theme="light_blue.xml")
     else:
         print("Unknown theme : '%s' ! Using system ..." % style)
         app.setStyle("")
