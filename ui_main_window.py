@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_windowZYJowu.ui'
+## Form generated from reading UI file 'main_windowKFzqPJ.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -44,6 +44,7 @@ class Ui_MainWindow(object):
         self.listWidget.setGeometry(QRect(30, 500, 311, 151))
         self.label = QLabel(self.centralwidget)
         self.label.setObjectName(u"label")
+        self.label.setEnabled(True)
         self.label.setGeometry(QRect(130, 30, 641, 141))
         font = QFont()
         font.setFamily(u"Segoe UI")
@@ -120,6 +121,7 @@ class Ui_MainWindow(object):
         font6.setPointSize(12)
         self.title_label.setFont(font6)
         self.title_label.setCursor(QCursor(Qt.ArrowCursor))
+        self.title_label.setFrameShadow(QFrame.Plain)
         self.progressBar = QProgressBar(self.centralwidget)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setGeometry(QRect(430, 670, 231, 31))
@@ -210,6 +212,30 @@ class Ui_MainWindow(object):
         self.cancelDownloadButton.setObjectName(u"cancelDownloadButton")
         self.cancelDownloadButton.setGeometry(QRect(594, 0, 101, 23))
         MainWindow.setCentralWidget(self.centralwidget)
+        self.listWidget.raise_()
+        self.label_3.raise_()
+        self.checkBox.raise_()
+        self.listWidget_2.raise_()
+        self.checkBox_2.raise_()
+        self.lineEdit.raise_()
+        self.SubmitButton.raise_()
+        self.thumbnail_label.raise_()
+        self.progressBar.raise_()
+        self.delButton.raise_()
+        self.clearButton.raise_()
+        self.widget.raise_()
+        self.widget_2.raise_()
+        self.conv_widget.raise_()
+        self.cancelDownloadButton.raise_()
+        self.commandLinkButton.raise_()
+        self.rating_label.raise_()
+        self.views_label.raise_()
+        self.date_label.raise_()
+        self.author_label.raise_()
+        self.title_label.raise_()
+        self.label_6.raise_()
+        self.label_2.raise_()
+        self.label.raise_()
         self.menuBar = QMenuBar(MainWindow)
         self.menuBar.setObjectName(u"menuBar")
         self.menuBar.setGeometry(QRect(0, 0, 700, 21))

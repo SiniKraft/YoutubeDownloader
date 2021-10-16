@@ -2,7 +2,6 @@ import sys
 import os
 import threading
 import time
-import trace
 import urllib.request
 import pathlib
 import logging
@@ -12,6 +11,8 @@ import webbrowser
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QObject, Slot, Signal
+
+from themes import set_style
 
 from ui_main_window import Ui_MainWindow
 from ui_path_dialog import Ui_PathDialog
@@ -202,6 +203,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.signals.signal_str.connect(exec_sth)
         self.signals.signal_str_2.connect(_show_msg)
         self.checkBox_3.setChecked(self.conv_settings[0])
+        self.is_download_thread_alive = False
 
         if self.conv_settings[2] == 0:
             self.actionAsk_what_to_do.setChecked(True)
@@ -213,7 +215,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         should_close = True
         try:
-            if self.thread_download_vid.is_alive:
+            if self.is_download_thread_alive:
+                print(True)
                 msgbox = QMessageBox(parent=main_window)
                 msgbox.setIcon(QMessageBox.Question)
                 msgbox.setWindowTitle("Youtube Downloader by Nicklor")
@@ -498,8 +501,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.thread_listen_bar.start()
 
     def dl_thread(self, ys, prefix):
+        self.is_download_thread_alive = True
         self.currentDownloadName = prefix + ys.default_filename
         ys.download(output_path=self.path_preference, filename_prefix=prefix)
+        self.is_download_thread_alive = False
 
     def bar_update_thread(self, filesize, _type='video'):
         def check_if_alive():
@@ -544,10 +549,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 try:
                     to_update = int((1 - (int(log_stream.getvalue().split("\n")[-2]
                                               .split("download remaining: ")[-1])) / filesize) * 1000)
+                    self.signals.use_signal_str("main_window.progressBar.setMaximum(1000)")
                     if not (to_update < 0 or to_update > 1000):
                         self.signals.use_signal_int(to_update)
                 except Exception as e:
                     print(e)
+                    self.signals.use_signal_str("main_window.progressBar.setMaximum(0)")
             print("Finished !")
             self.on_dl_finish()
 
@@ -630,6 +637,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 app = QApplication(sys.argv)
 
 app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
+
+set_style(app, "darkorange")
 
 main_window = MainWindow()
 

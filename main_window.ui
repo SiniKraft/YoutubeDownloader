@@ -40,6 +40,9 @@
     </property>
    </widget>
    <widget class="QLabel" name="label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>130</x>
@@ -272,6 +275,9 @@
     </property>
     <property name="cursor">
      <cursorShape>ArrowCursor</cursorShape>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
     </property>
     <property name="text">
      <string/>
@@ -632,6 +638,30 @@
      <string>Cancel Download</string>
     </property>
    </widget>
+   <zorder>listWidget</zorder>
+   <zorder>label_3</zorder>
+   <zorder>checkBox</zorder>
+   <zorder>listWidget_2</zorder>
+   <zorder>checkBox_2</zorder>
+   <zorder>lineEdit</zorder>
+   <zorder>SubmitButton</zorder>
+   <zorder>thumbnail_label</zorder>
+   <zorder>progressBar</zorder>
+   <zorder>delButton</zorder>
+   <zorder>clearButton</zorder>
+   <zorder>widget</zorder>
+   <zorder>widget_2</zorder>
+   <zorder>conv_widget</zorder>
+   <zorder>cancelDownloadButton</zorder>
+   <zorder>commandLinkButton</zorder>
+   <zorder>rating_label</zorder>
+   <zorder>views_label</zorder>
+   <zorder>date_label</zorder>
+   <zorder>author_label</zorder>
+   <zorder>title_label</zorder>
+   <zorder>label_6</zorder>
+   <zorder>label_2</zorder>
+   <zorder>label</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
