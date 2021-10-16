@@ -692,6 +692,7 @@
      <addaction name="actionFusion"/>
      <addaction name="actionDark_Fusion"/>
      <addaction name="actionDark_Orange"/>
+     <addaction name="actionOld_Windows"/>
     </widget>
     <addaction name="actionChange_Downloads_Location"/>
     <addaction name="actionAbout"/>
@@ -747,23 +748,43 @@
    </property>
   </action>
   <action name="actionSystem">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>System</string>
    </property>
   </action>
   <action name="actionFusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Fusion</string>
    </property>
   </action>
   <action name="actionDark_Fusion">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Dark Fusion</string>
    </property>
   </action>
   <action name="actionDark_Orange">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Dark Orange</string>
+   </property>
+  </action>
+  <action name="actionOld_Windows">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Old Windows</string>
    </property>
   </action>
  </widget>

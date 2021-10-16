@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_windowAfcQiF.ui'
+## Form generated from reading UI file 'main_windowfHCULY.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -40,12 +40,19 @@ class Ui_MainWindow(object):
         self.actionAbout_Qt.setObjectName(u"actionAbout_Qt")
         self.actionSystem = QAction(MainWindow)
         self.actionSystem.setObjectName(u"actionSystem")
+        self.actionSystem.setCheckable(True)
         self.actionFusion = QAction(MainWindow)
         self.actionFusion.setObjectName(u"actionFusion")
+        self.actionFusion.setCheckable(True)
         self.actionDark_Fusion = QAction(MainWindow)
         self.actionDark_Fusion.setObjectName(u"actionDark_Fusion")
+        self.actionDark_Fusion.setCheckable(True)
         self.actionDark_Orange = QAction(MainWindow)
         self.actionDark_Orange.setObjectName(u"actionDark_Orange")
+        self.actionDark_Orange.setCheckable(True)
+        self.actionOld_Windows = QAction(MainWindow)
+        self.actionOld_Windows.setObjectName(u"actionOld_Windows")
+        self.actionOld_Windows.setCheckable(True)
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.listWidget = QListWidget(self.centralwidget)
@@ -271,6 +278,7 @@ class Ui_MainWindow(object):
         self.menuTheme.addAction(self.actionFusion)
         self.menuTheme.addAction(self.actionDark_Fusion)
         self.menuTheme.addAction(self.actionDark_Orange)
+        self.menuTheme.addAction(self.actionOld_Windows)
 
         self.retranslateUi(MainWindow)
 
@@ -293,6 +301,7 @@ class Ui_MainWindow(object):
         self.actionFusion.setText(QCoreApplication.translate("MainWindow", u"Fusion", None))
         self.actionDark_Fusion.setText(QCoreApplication.translate("MainWindow", u"Dark Fusion", None))
         self.actionDark_Orange.setText(QCoreApplication.translate("MainWindow", u"Dark Orange", None))
+        self.actionOld_Windows.setText(QCoreApplication.translate("MainWindow", u"Old Windows", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Youtube Downloader", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"by Nicklor", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Your URL : ", None))

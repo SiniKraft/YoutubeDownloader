@@ -20,35 +20,42 @@ from ui_convert_dialog import Ui_ConvertDialog
 
 from pytube import YouTube
 
+
 class KThread(threading.Thread):
-  """A subclass of KThread, with a kill()
+    """A subclass of KThread, with a kill()
 method."""
-  def __init__(self, *args, **keywords):
-    threading.Thread.__init__(self, *args, **keywords)
-    self.killed = False
-  def start(self):
-    """Start the thread."""
-    self.__run_backup = self.run
-    self.run = self.__run     
-    threading.Thread.start(self)
-  def __run(self):
-    """Hacked run function, which installs the
+
+    def __init__(self, *args, **keywords):
+        threading.Thread.__init__(self, *args, **keywords)
+        self.killed = False
+
+    def start(self):
+        """Start the thread."""
+        self.__run_backup = self.run
+        self.run = self.__run
+        threading.Thread.start(self)
+
+    def __run(self):
+        """Hacked run function, which installs the
 trace."""
-    sys.settrace(self.globaltrace)
-    self.__run_backup()
-    self.run = self.__run_backup
-  def globaltrace(self, frame, why, arg):
-    if why == 'call':
-      return self.localtrace
-    else:
-      return None
-  def localtrace(self, frame, why, arg):
-    if self.killed:
-      if why == 'line':
-        raise SystemExit()
-    return self.localtrace
-  def kill(self):
-    self.killed = True
+        sys.settrace(self.globaltrace)
+        self.__run_backup()
+        self.run = self.__run_backup
+
+    def globaltrace(self, frame, why, arg):
+        if why == 'call':
+            return self.localtrace
+        else:
+            return None
+
+    def localtrace(self, frame, why, arg):
+        if self.killed:
+            if why == 'line':
+                raise SystemExit()
+        return self.localtrace
+
+    def kill(self):
+        self.killed = True
 
 
 log_stream = io.StringIO()
@@ -58,6 +65,7 @@ pref_path = os.path.join(str(pathlib.Path().home()), ".NicklorYoutubeDownloader/
 os.makedirs(pref_path, exist_ok=True)
 if sys.platform == "win32":
     import ctypes
+
     ctypes.windll.kernel32.SetFileAttributesW(pref_path, 0x02)
 
 if not os.path.isfile(pref_path + "pathPreference"):
@@ -71,7 +79,7 @@ else:
         file.close()
 
 if not os.path.isfile(pref_path + "convSettings"):
-    conv_settings = "# Nicklor Youtube Downloader Conversions Settings\n# Parameters : Is convert checkbox checked ?, "\
+    conv_settings = "# Nicklor Youtube Downloader Conversions Settings\n# Parameters : Is convert checkbox checked ?, " \
                     "Last chose conversion format, and existing file check mode.\n# (0: Ask, 1: replace, 2:skip)\n" \
                     "False,MP4,0"
     with open(os.path.join(pref_path, "convSettings"), "w+") as file:
@@ -87,34 +95,51 @@ else:
     conv_settings_l[2] = int(conv_settings_l[2])
 
 
-def save_conv_settings(_conv_settings_l):
-    conv_settings = "# Nicklor Youtube Downloader Conversions Settings\n# Parameters : Is convert checkbox checked ?, "\
-                    "Last chose conversion format, and existing file check mode.\n# (0: Ask, 1: replace, 2:skip)\n"\
+def save_conv_settings(_conv_settings_l: list):
+    conv_settings = "# Nicklor Youtube Downloader Conversions Settings\n# Parameters : Is convert checkbox checked ?, " \
+                    "Last chose conversion format, and existing file check mode.\n# (0: Ask, 1: replace, 2:skip)\n" \
                     + str(_conv_settings_l[0]) + "," + str(_conv_settings_l[1]) + "," + str(_conv_settings_l[2])
     with open(os.path.join(pref_path, "convSettings"), "w+") as ___file:
         ___file.write(conv_settings)
         ___file.close()
 
 
+if not os.path.isfile(pref_path + "selectedTheme"):
+    selected_theme = "System"
+    with open(os.path.join(pref_path, "selectedTheme"), "w+") as file:
+        file.write(selected_theme)
+        file.close()
+else:
+    with open(os.path.join(pref_path, "selectedTheme"), "r") as file:
+        selected_theme = file.read()
+        file.close()
+
+
+def save_theme(theme: str):
+    with open(os.path.join(pref_path, "selectedTheme"), "w+") as file:
+        file.write(theme)
+        file.close()
+
+
 @Slot(str)
-def exec_sth(value):
+def exec_sth(value: str):
     exec(value)
 
 
 @Slot(int)
-def update_bar(value):
+def update_bar(value: int):
     main_window.progressBar.setValue(value)
 
 
 @Slot(str)
-def _show_msg(value, type="info"):
-    if type == "info":
+def _show_msg(value: str, _type="info"):
+    if _type == "info":
         msgbox = QMessageBox(parent=main_window)
         msgbox.setIcon(QMessageBox.Information)
         msgbox.setWindowTitle("Youtube Downloader by Nicklor")
         msgbox.setText(value)
         msgbox.exec_()
-    elif type == "error":
+    elif _type == "error":
         msgbox = QMessageBox(parent=main_window)
         msgbox.setIcon(QMessageBox.Critical)
         msgbox.setWindowTitle("Youtube Downloader by Nicklor")
@@ -128,13 +153,13 @@ class Communicate(QObject):
     signal_str = Signal(str)
     signal_str_2 = Signal(str, str)
 
-    def use_signal_str(self, value):
+    def use_signal_str(self, value: str):
         self.signal_str.emit(value)
 
-    def use_signal_int(self, value):
+    def use_signal_int(self, value: int):
         self.signal_int.emit(value)
 
-    def show_msg(self, value, type="info"):
+    def show_msg(self, value: str, type="info"):
         self.signal_str_2.emit(value, type)
 
 
@@ -158,7 +183,7 @@ class PathDialog(QDialog, Ui_PathDialog):
         self.buttonBox.accepted.connect(lambda: self.save_pref(parent))
         self.pushButton.clicked.connect(self.open_folder)
 
-    def save_pref(self, parent):
+    def save_pref(self, parent: QMainWindow):
         parent.path_preference = self.lineEdit.text()
         with open(os.path.join(pref_path, "pathPreference"), "w+") as file__:
             file__.write(parent.path_preference)
@@ -204,6 +229,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.signals.signal_str_2.connect(_show_msg)
         self.checkBox_3.setChecked(self.conv_settings[0])
         self.is_download_thread_alive = False
+        self.theme_actions_mgr()
 
         if self.conv_settings[2] == 0:
             self.actionAsk_what_to_do.setChecked(True)
@@ -281,6 +307,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionReplace_file.triggered.connect(lambda: self.qactions(3))
         self.actionSkip_download.triggered.connect(lambda: self.qactions(4))
         self.cancelDownloadButton.clicked.connect(self.cancel_download)
+        self.actionAbout_Qt.triggered.connect(app.aboutQt)
+        self.actionSystem.triggered.connect(lambda: self.change_theme("system"))
+        self.actionFusion.triggered.connect(lambda: self.change_theme("fusion"))
+        self.actionDark_Fusion.triggered.connect(lambda: self.change_theme("dark_fusion"))
+        self.actionDark_Orange.triggered.connect(lambda: self.change_theme("darkorange"))
+        self.actionOld_Windows.triggered.connect(lambda: self.change_theme("windows"))
+
+    def change_theme(self, theme: str):
+        self.theme_actions_mgr()
+        self.signals.show_msg("You need to restart the app to apply changes !")
+        save_theme(theme)
+
+    def theme_actions_mgr(self):
+        self.actionSystem.setChecked(False)
+        self.actionOld_Windows.setChecked(False)
+        self.actionFusion.setChecked(False)
+        self.actionDark_Fusion.setChecked(False)
+        self.actionDark_Orange.setChecked(False)
+        if selected_theme == "system":
+            self.actionSystem.setChecked(True)
+        elif selected_theme == "fusion":
+            self.actionFusion.setChecked(True)
+        elif selected_theme == "dark_fusion":
+            self.actionDark_Fusion.setChecked(True)
+        elif selected_theme == "darkorange":
+            self.actionDark_Orange.setChecked(True)
+        elif selected_theme == "windows":
+            self.actionOld_Windows.setChecked(True)
 
     def checkbox_3_check(self):
         if self.checkBox_3.isChecked():
@@ -612,7 +666,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logging.log(logging.WARN, "Download canceled by user !")
         self.on_dl_finish()
 
-
     def on_dl_finish(self):
         self.signals.use_signal_str("main_window.cancelDownloadButton.hide()")
         self.signals.use_signal_str("main_window.progressBar.setMaximum(1000)")
@@ -638,7 +691,7 @@ app = QApplication(sys.argv)
 
 app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
 
-set_style(app, "darkorange")
+set_style(app, selected_theme)
 
 main_window = MainWindow()
 
