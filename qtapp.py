@@ -267,15 +267,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
 
-    def convert_handler(self, file_1: str, output: str, file_2=None):
+    def convert_handler(self, file_1: str, output: str, file_2=None, quality=100):
         # subprocess.run(["ffmpeg", "-i", file_1, "-1", file_2, "-crf", "0", "-qscale", "0", output],
         #                capture_output=True, text=True)
         import asyncio
         from ffmpeg import FFmpeg
+
         if file_2 is None:
-            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(os.path.join(self.path_preference, output).replace("\\", "/"), crf=0, qscale=0)
+            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
+                os.path.join(self.path_preference, output).replace("\\", "/"), crf=18, qscale=18)
         else:
-            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output).replace("\\", "/"), crf=0, qscale=0)
+            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(
+                self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
+                                                                         .replace("\\", "/"), crf=18, qscale=18)
 
         @ffmpeg.on('start')
         def on_start(arguments):
