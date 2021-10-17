@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'convert_dialogotBJqN.ui'
+## Form generated from reading UI file 'convert_dialogWTDFpq.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -18,6 +18,8 @@ class Ui_ConvertDialog(object):
         if not ConvertDialog.objectName():
             ConvertDialog.setObjectName(u"ConvertDialog")
         ConvertDialog.resize(375, 255)
+        ConvertDialog.setMinimumSize(QSize(375, 255))
+        ConvertDialog.setMaximumSize(QSize(375, 255))
         self.buttonBox = QDialogButtonBox(ConvertDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(20, 220, 341, 32))

@@ -1,3 +1,4 @@
+import subprocess
 import sys
 import os
 import threading
@@ -8,7 +9,7 @@ import logging
 import io
 import webbrowser
 
-from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox
+from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QRadioButton
 from PySide2.QtGui import QPixmap, QIcon
 from PySide2.QtCore import Qt, QObject, Slot, Signal, QRect, QSize
 
@@ -166,18 +167,30 @@ class Communicate(QObject):
 
 
 class ConvertDialog(QDialog, Ui_ConvertDialog):
-    def __init__(self, parent):
+    def __init__(self, parent: "qtapp.MainWindow"):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Choose export format ...")
         self.buttonBox.accepted.connect(lambda: self.save_conv(parent))
 
+        if "material" in selected_theme:
+            self.setMinimumSize(QSize(375, 275))
+            self.setMaximumSize(QSize(375, 275))
+            self.resize(375, 275)
+            self.buttonBox.setGeometry(QRect(20, 220, 341, 52))
+
+        eval("self." + parent.conv_settings[1].lower() + ".setChecked(True)")
+
     def save_conv(self, parent):
-        pass
+        for radio_btn in self.findChildren(QRadioButton):
+            if radio_btn.isChecked():
+                parent.conv_settings[1] = radio_btn.objectName().upper()
+        save_conv_settings(parent.conv_settings)
+        parent.export_label.setText(parent.conv_settings[1])
 
 
 class PathDialog(QDialog, Ui_PathDialog):
-    def __init__(self, parent):
+    def __init__(self, parent: "qtapp.MainWindow"):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Downloads location")
@@ -238,6 +251,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.checkBox_3.setChecked(self.conv_settings[0])
         self.is_download_thread_alive = False
         self.theme_actions_mgr()
+        self.export_label.setText(self.conv_settings[1])
+        self.is_convert_handler_running = False
 
         if self.conv_settings[2] == 0:
             self.actionAsk_what_to_do.setChecked(True)
@@ -252,6 +267,50 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
 
+    def convert_handler(self, file_1: str, output: str, file_2=None):
+        # subprocess.run(["ffmpeg", "-i", file_1, "-1", file_2, "-crf", "0", "-qscale", "0", output],
+        #                capture_output=True, text=True)
+        import asyncio
+        from ffmpeg import FFmpeg
+        if file_2 is None:
+            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(os.path.join(self.path_preference, output).replace("\\", "/"), crf=0, qscale=0)
+        else:
+            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output).replace("\\", "/"), crf=0, qscale=0)
+
+        @ffmpeg.on('start')
+        def on_start(arguments):
+            print('Starting merge with arguments: ', arguments)
+
+        @ffmpeg.on('stderr')
+        def on_stderr(line):
+            print('stderr: ', line)
+
+        @ffmpeg.on('progress')
+        def on_progress(progress):
+            print(progress)
+
+        @ffmpeg.on('progress')
+        def time_to_terminate(progress):
+            # Gracefully terminate when more than 200 frames are processed
+            # if progress.frame > 200:
+            #     ffmpeg.terminate()
+            pass
+
+        @ffmpeg.on('completed')
+        def on_completed():
+            print('Completed')
+
+        @ffmpeg.on('terminated')
+        def on_terminated():
+            print('Terminated')
+
+        @ffmpeg.on('error')
+        def on_error(code):
+            print('Error:', code)
+
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(ffmpeg.execute())
+        loop.close()
 
     def closeEvent(self, event):
         should_close = True
