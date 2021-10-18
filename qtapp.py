@@ -275,11 +275,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if file_2 is None:
             ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
-                os.path.join(self.path_preference, output).replace("\\", "/"), crf=18, qscale=18)
+                os.path.join(self.path_preference, output).replace("\\", "/"), {"c:v": "copy", "c:a": "copy"})
         else:
             ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(
                 self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
-                                                                         .replace("\\", "/"), crf=18, qscale=18)
+                                                                         .replace("\\", "/"), {"c:v": "copy",
+                                                                                               "c:a": "copy"})
 
         @ffmpeg.on('start')
         def on_start(arguments):
