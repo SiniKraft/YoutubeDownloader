@@ -457,7 +457,7 @@ def qCleanupResources():
 qInitResources()
 
 
-# End of darkorange style resources#
+# End of darkorange style resources #
 def set_style(app: PySide2.QtWidgets.QApplication, style: str):
     style = style.lower()
     if style == "dark_fusion":

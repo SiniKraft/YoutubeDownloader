@@ -18,6 +18,7 @@ from themes import set_style
 from ui_main_window import Ui_MainWindow
 from ui_path_dialog import Ui_PathDialog
 from ui_convert_dialog import Ui_ConvertDialog
+from ui_merging_dialog import Ui_MergingDialog
 
 from pytube import YouTube
 
@@ -143,6 +144,7 @@ def _show_msg(value: str, _type="info"):
         msgbox.setText(value)
         msgbox.exec_()
     elif _type == "error":
+        logging.log(logging.ERROR, str(value))
         msgbox = QMessageBox(parent=main_window)
         msgbox.setIcon(QMessageBox.Critical)
         msgbox.setWindowTitle("Youtube Downloader by Nicklor")
@@ -222,6 +224,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
+        self.conv_widget.hide()
         self.conv_settings = conv_settings_l
         self.currentDownloadName = ""
         self.cancelDownloadButton.hide()
@@ -267,32 +270,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
 
-    def convert_handler(self, file_1: str, output: str, file_2=None, quality=100):
+    def convert_handler(self, file_1: str, file_2: str, output: str):
         # subprocess.run(["ffmpeg", "-i", file_1, "-1", file_2, "-crf", "0", "-qscale", "0", output],
         #                capture_output=True, text=True)
         import asyncio
         from ffmpeg import FFmpeg
 
-        if file_2 is None:
-            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
-                os.path.join(self.path_preference, output).replace("\\", "/"), {"c:v": "copy", "c:a": "copy"})
-        else:
-            ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(
-                self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
-                                                                         .replace("\\", "/"), {"c:v": "copy",
-                                                                                               "c:a": "copy"})
+        # if file_2 is None:
+        #     ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
+        #         os.path.join(self.path_preference, output).replace("\\", "/"), {"c:v": "copy", "c:a": "copy"})
+        # else:
+        ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(
+            self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
+                                                                     .replace("\\", "/"), {"c:v": "copy",
+                                                                                           "c:a": "copy", "a": "b"})
 
         @ffmpeg.on('start')
         def on_start(arguments):
-            print('Starting merge with arguments: ', arguments)
+            logging.log(logging.INFO, 'Starting merge with arguments: ' + str(arguments))
 
         @ffmpeg.on('stderr')
         def on_stderr(line):
-            print('stderr: ', line)
+            logging.log(logging.INFO, str(line))
 
-        @ffmpeg.on('progress')
-        def on_progress(progress):
-            print(progress)
+        # @ffmpeg.on('progress')
+        # def on_progress(progress):
+        #     print(progress)
 
         @ffmpeg.on('progress')
         def time_to_terminate(progress):
@@ -303,15 +306,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         @ffmpeg.on('completed')
         def on_completed():
-            print('Completed')
+            logging.log(logging.INFO, "Completed !")
 
         @ffmpeg.on('terminated')
         def on_terminated():
-            print('Terminated')
+            logging.log(logging.CRITICAL, "Terminated !")
 
         @ffmpeg.on('error')
         def on_error(code):
-            print('Error:', code)
+            logging.log(logging.CRITICAL, "FATAL ERROR: " + str(code))
+            with open(os.path.join(str(pathlib.Path.home()), "YouTubeDownloader_CRASH.txt"), "w+") as file:
+                file.write(log_stream.getvalue())
+                file.close()
+            self.signals.show_msg("An error has been detected and merging was probably unsuccessful !\nThe log file has"
+                                  " been added to your home folder.", "error")
 
         loop = asyncio.get_event_loop()
         loop.run_until_complete(ffmpeg.execute())
@@ -321,7 +329,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         should_close = True
         try:
             if self.is_download_thread_alive:
-                print(True)
                 msgbox = QMessageBox(parent=main_window)
                 msgbox.setIcon(QMessageBox.Question)
                 msgbox.setWindowTitle("Youtube Downloader by Nicklor")
@@ -346,17 +353,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     try:
                         self.thread_listen_bar.kill()
                     except Exception as e:
-                        print(e)
+                        logging.log(logging.ERROR, str(e))
                     try:
                         self.thread_download_vid.kill()
                     except Exception as e:
-                        print(e)
+                        logging.log(logging.ERROR, str(e))
                     try:
                         self.thread_download_aud.kill()
                     except Exception as e:
-                        print(e)
+                        logging.log(logging.ERROR, str(e))
         except Exception as e:
-            print(e)
+            logging.log(logging.ERROR, str(e))
         if not should_close:
             event.ignore()
         else:
@@ -667,9 +674,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if not (to_update < 0 or to_update > 1000):
                     self.signals.use_signal_int(to_update)
             except Exception as e:
-                print(e)
+                logging.log(logging.ERROR, str(e))
                 self.signals.use_signal_str("main_window.progressBar.setMaximum(0)")
-        print("Finished !")
+        logging.log(logging.INFO, "Download finished !")
         self.signals.use_signal_str("main_window.progressBar.setMaximum(1000)")
         self.signals.use_signal_int(999)
         if self.dl_mode == 1 or self.dl_mode == 3:
@@ -694,9 +701,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if not (to_update < 0 or to_update > 1000):
                         self.signals.use_signal_int(to_update)
                 except Exception as e:
-                    print(e)
+                    logging.log(logging.ERROR, str(e))
                     self.signals.use_signal_str("main_window.progressBar.setMaximum(0)")
-            print("Finished !")
+            logging.log(logging.INFO, "Download Finished !")
             self.on_dl_finish()
 
     def qactions(self, num):
@@ -735,20 +742,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             self.thread_download_aud.kill()
         except Exception as e:
-            print(e)
+            logging.log(logging.ERROR, str(e))
         try:
             self.thread_download_vid.kill()
         except Exception as e:
-            print(e)
+            logging.log(logging.ERROR, str(e))
         try:
             self.thread_listen_bar.kill()
         except Exception as e:
-            print(e)
+            logging.log(logging.ERROR, str(e))
         try:
             time.sleep(2)
             os.remove(os.path.join(self.path_preference, self.currentDownloadName))
         except Exception as e:
-            print(e)
+            logging.log(logging.ERROR, str(e))
 
         logging.log(logging.WARN, "Download canceled by user !")
         self.on_dl_finish()
@@ -774,6 +781,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")[-2])
 
 
+def log_listen_thread():
+    while True:
+        with open("log.txt", "w+") as log:
+            log.write(log_stream.getvalue())
+            log.close()
+        time.sleep(2)
+
+
+log_thread = KThread(target=log_listen_thread)
+log_thread.start()
+
+
 app = QApplication(sys.argv)
 
 app.setAttribute(Qt.AA_DisableWindowContextHelpButton)
@@ -786,4 +805,9 @@ main_window.show()
 
 exit_code = app.exec_()
 
-# sys.exit(exit_code)
+log_thread.kill()
+with open("log.txt", "w+") as log:
+    log.write(log_stream.getvalue())
+    log.close()
+
+sys.exit(exit_code)
