@@ -168,6 +168,13 @@ class Communicate(QObject):
         self.signal_str_2.emit(value, type)
 
 
+class MergingDialog(QDialog, Ui_MergingDialog):
+    def __int__(self, parent: "qtapp.MainWindow"):
+        QDialog.__init__(self, parent=parent)
+        self.setupUi(self)
+        self.setWindowTitle("Merging files ...")
+
+
 class ConvertDialog(QDialog, Ui_ConvertDialog):
     def __init__(self, parent: "qtapp.MainWindow"):
         QDialog.__init__(self, parent=parent)
