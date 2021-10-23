@@ -1,4 +1,3 @@
-import subprocess
 import sys
 import os
 import threading
@@ -8,6 +7,7 @@ import pathlib
 import logging
 import io
 import webbrowser
+import glob
 
 from PySide2.QtWidgets import QApplication, QMainWindow, QDialog, QFileDialog, QMessageBox, QRadioButton
 from PySide2.QtGui import QPixmap, QIcon
@@ -631,6 +631,48 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return True
         return False
 
+    def should_dl(self, filename: str):
+        to_return = True
+        if self.dl_mode == 1 or self.dl_mode == 3:  # single download
+            if os.path.isfile(os.path.join(self.path_preference, filename).replace("\\", "/")) and \
+                    self.conv_settings[2] != 1:  # return true
+                if self.conv_settings[2] == 2:  # cancel
+                    to_return = False
+                else:  # conv_settings = 0 ! : ask
+                    dia = QMessageBox(parent=main_window)
+                    dia.setIcon(QMessageBox.Question)
+                    dia.setWindowTitle("Youtube Downloader by Nicklor")
+                    dia.setText("The file '%s' already exists. Do you want to replace it ?" % filename)
+                    dia.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+                    dia.exec_()
+                    if dia.clickedButton() == dia.button(QMessageBox.Yes):
+                        to_return = True
+                    if dia.clickedButton() == dia.button(QMessageBox.Cancel):
+                        to_return = False
+        else:  # multiple download
+            is_file = False
+            for file in glob.glob(self.path_preference + "/" + "*.*"):
+                if os.path.splitext(filename)[0] in file:
+                    is_file = True
+            if is_file:
+                if self.conv_settings[2] == 2:
+                    to_return = False
+                if self.conv_settings[2] == 0:
+                    dia = QMessageBox(parent=main_window)
+                    dia.setIcon(QMessageBox.Question)
+                    dia.setWindowTitle("Youtube Downloader by Nicklor")
+                    dia.setText("The file '%s' already exists. Do you want to replace it ?" %
+                                os.path.splitext(filename)[0])
+                    dia.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+                    dia.exec_()
+                    if dia.clickedButton() == dia.button(QMessageBox.Yes):
+                        to_return = True
+                    if dia.clickedButton() == dia.button(QMessageBox.Cancel):
+                        to_return = False
+        if not to_return:
+            self.on_dl_finish(False)
+        return to_return
+
     def download_handler(self):
         self.cancelDownloadButton.show()
         self.clearButton.setDisabled(True)
@@ -657,34 +699,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 prefix = ""
             if self.bestresbtn.isChecked():
-                self.thread_download_vid = KThread(target=self.dl_thread, args=(
-                    self.ys.filter(type='video').order_by("resolution").desc().first(), prefix,))
-                self.thread_download_vid.start()
-                self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(
-                    self.ys.filter(type='video').order_by("resolution").desc().first().filesize,))
-                self.thread_listen_bar.start()
+                if self.should_dl(self.ys.filter(type='video').order_by("resolution").desc().first().default_filename):
+                    self.thread_download_vid = KThread(target=self.dl_thread, args=(
+                        self.ys.filter(type='video').order_by("resolution").desc().first(), prefix,))
+                    self.thread_download_vid.start()
+                    self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(
+                        self.ys.filter(type='video').order_by("resolution").desc().first().filesize,))
+                    self.thread_listen_bar.start()
             else:
-                self.thread_download_vid = KThread(target=self.dl_thread, args=(
-                    self.ys.get_by_itag(self.vid_select_itag), prefix,))
-                self.thread_download_vid.start()
-                self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
-                    self.vid_select_itag).filesize,))
-                self.thread_listen_bar.start()
+                if self.should_dl(self.ys.get_by_itag(self.vid_select_itag).default_filename):
+                    self.thread_download_vid = KThread(target=self.dl_thread, args=(
+                        self.ys.get_by_itag(self.vid_select_itag), prefix,))
+                    self.thread_download_vid.start()
+                    self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
+                        self.vid_select_itag).filesize,))
+                    self.thread_listen_bar.start()
         elif self.dl_mode == 3:
             if self.bestresbtn_2.isChecked():
-                self.thread_download_aud = KThread(target=self.dl_thread, args=(
-                    self.ys.filter(type='audio').order_by("abr").desc().first(), "",))
-                self.thread_download_aud.start()
-                self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(
-                    self.ys.filter(type='audio').order_by("abr").desc().first().filesize, "audio",))
-                self.thread_listen_bar.start()
+                if self.should_dl(self.ys.filter(type='audio').order_by("abr").desc().first().default_filename):
+                    self.thread_download_aud = KThread(target=self.dl_thread, args=(
+                        self.ys.filter(type='audio').order_by("abr").desc().first(), "",))
+                    self.thread_download_aud.start()
+                    self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(
+                        self.ys.filter(type='audio').order_by("abr").desc().first().filesize, "audio",))
+                    self.thread_listen_bar.start()
             else:
-                self.thread_download_aud = KThread(target=self.dl_thread, args=(
-                    self.ys.get_by_itag(self.aud_select_itag), "",))
-                self.thread_download_aud.start()
-                self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
-                    self.aud_select_itag).filesize, "audio",))
-                self.thread_listen_bar.start()
+                if self.should_dl(self.ys.get_by_itag(self.aud_select_itag).default_filename):
+                    self.thread_download_aud = KThread(target=self.dl_thread, args=(
+                        self.ys.get_by_itag(self.aud_select_itag), "",))
+                    self.thread_download_aud.start()
+                    self.thread_listen_bar = KThread(target=self.bar_update_thread, args=(self.ys.get_by_itag(
+                        self.aud_select_itag).filesize, "audio",))
+                    self.thread_listen_bar.start()
 
     def dl_thread(self, ys, prefix):
         self.is_download_thread_alive = True
@@ -822,14 +868,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.checkBox_2.isChecked() and self.chooseresbtn_2.isChecked():
             self.signals.use_signal_str("main_window.listWidget_2.setDisabled(False)")
         if show:
-            self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")
-            [-2])
+            self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue()
+                                  .split("\n")[-2])
 
 
 def log_listen_thread():
     while True:
         with open("log.txt", "w+") as log:
-            log.write(log_stream.getvalue())
+            log.write(str(log_stream.getvalue().encode("utf-8")))  # Some youtube titles contains utf8 chars !!!
             log.close()
         time.sleep(2)
 
@@ -851,7 +897,7 @@ exit_code = app.exec_()
 
 log_thread.kill()
 with open("log.txt", "w+") as log:
-    log.write(log_stream.getvalue())
+    log.write(str(log_stream.getvalue().encode("utf-8")))
     log.close()
 
 sys.exit(exit_code)
