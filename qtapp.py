@@ -169,14 +169,35 @@ class Communicate(QObject):
 
 
 class MergingDialog(QDialog, Ui_MergingDialog):
-    def __int__(self, parent: "qtapp.MainWindow"):
+    def __init__(self, parent: "MainWindow", file_1, file_2, output):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Merging files ...")
+        parent.merging_state = 1  # merging ...
+        self.files = (file_1, file_2)
+        self.thread_convert = KThread(target=lambda: parent.convert_handler(file_1, file_2, output))
+        self.thread_convert.start()
+        self.thread_update = KThread(target=lambda: self.update_thread(parent))
+        self.thread_update.start()
+
+    def closeEvent(self, event):
+        if main_window.merging_state == 1:
+            event.ignore()
+        else:
+            event.accept()
+
+    def update_thread(self, parent):
+        while parent.merging_state == 1:
+            parent.signals.use_signal_str('main_window.merge_dialog.plainTextEdit.setPlainText(log_stream.getvalue()'
+                                          '.split("Starting merge with arguments: ")[-1])')
+            time.sleep(0.01)
+        self.close()
+        os.remove(os.path.join(parent.path_preference, self.files[0]).replace("\\", "/"))
+        os.remove(os.path.join(parent.path_preference, self.files[1]).replace("\\", "/"))
 
 
 class ConvertDialog(QDialog, Ui_ConvertDialog):
-    def __init__(self, parent: "qtapp.MainWindow"):
+    def __init__(self, parent: "MainWindow"):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Choose export format ...")
@@ -195,11 +216,11 @@ class ConvertDialog(QDialog, Ui_ConvertDialog):
             if radio_btn.isChecked():
                 parent.conv_settings[1] = radio_btn.objectName().upper()
         save_conv_settings(parent.conv_settings)
-        parent.export_label.setText(parent.conv_settings[1])
+        # parent.export_label.setText(parent.conv_settings[1])
 
 
 class PathDialog(QDialog, Ui_PathDialog):
-    def __init__(self, parent: "qtapp.MainWindow"):
+    def __init__(self, parent: "MainWindow"):
         QDialog.__init__(self, parent=parent)
         self.setupUi(self)
         self.setWindowTitle("Downloads location")
@@ -231,7 +252,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
-        self.conv_widget.hide()
+        self.merging_state = 0
+        self.merge_dialog = None
         self.conv_settings = conv_settings_l
         self.currentDownloadName = ""
         self.cancelDownloadButton.hide()
@@ -261,7 +283,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.checkBox_3.setChecked(self.conv_settings[0])
         self.is_download_thread_alive = False
         self.theme_actions_mgr()
-        self.export_label.setText(self.conv_settings[1])
         self.is_convert_handler_running = False
 
         if self.conv_settings[2] == 0:
@@ -277,6 +298,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
 
+    def show_dialog(self, file_1, file_2, output):
+        self.merge_dialog = MergingDialog(self, file_1, file_2, output)
+        self.merge_dialog.exec_()
+        if self.merging_state == 2:
+            self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")
+            [-2])
+
     def convert_handler(self, file_1: str, file_2: str, output: str):
         # subprocess.run(["ffmpeg", "-i", file_1, "-1", file_2, "-crf", "0", "-qscale", "0", output],
         #                capture_output=True, text=True)
@@ -287,10 +315,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
         #         os.path.join(self.path_preference, output).replace("\\", "/"), {"c:v": "copy", "c:a": "copy"})
         # else:
-        ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(os.path.join(
-            self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
-                                                                     .replace("\\", "/"), {"c:v": "copy",
-                                                                                           "c:a": "copy", "a": "b"})
+        ffmpeg = FFmpeg().option("y").input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(
+            os.path.join(
+                self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
+                                                                         .replace("\\", "/"), {"c:v": "copy",
+                                                                                               "c:a": "copy"})
 
         @ffmpeg.on('start')
         def on_start(arguments):
@@ -314,6 +343,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         @ffmpeg.on('completed')
         def on_completed():
             logging.log(logging.INFO, "Completed !")
+            main_window.merging_state = 2
 
         @ffmpeg.on('terminated')
         def on_terminated():
@@ -322,13 +352,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         @ffmpeg.on('error')
         def on_error(code):
             logging.log(logging.CRITICAL, "FATAL ERROR: " + str(code))
+            self.merging_state = 3
             with open(os.path.join(str(pathlib.Path.home()), "YouTubeDownloader_CRASH.txt"), "w+") as file:
                 file.write(log_stream.getvalue())
                 file.close()
             self.signals.show_msg("An error has been detected and merging was probably unsuccessful !\nThe log file has"
                                   " been added to your home folder.", "error")
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.new_event_loop()
         loop.run_until_complete(ffmpeg.execute())
         loop.close()
 
@@ -394,7 +425,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionAbout.triggered.connect(lambda: webbrowser.open("https://github.com/SiniKraft/YoutubeDownloader"
                                                                    "#youtubedownloader"))
         self.actionExit.triggered.connect(self.close)
-        self.toolButton.clicked.connect(self.show_convert_dialog)
         self.checkBox_3.clicked.connect(self.checkbox_3_check)
         self.actionAsk_what_to_do.triggered.connect(lambda: self.qactions(2))
         self.actionReplace_file.triggered.connect(lambda: self.qactions(3))
@@ -504,7 +534,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_submit_btn(self, is_end, error=False):
         if not is_end:
-            self.conv_widget.setDisabled(True)
             self.delButton.setDisabled(True)
             self.SubmitButton.setDisabled(True)
             self.lineEdit.setDisabled(True)
@@ -516,7 +545,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             thread.start()
         else:
             self.progressBar.setMaximum(100)
-            self.conv_widget.setEnabled(True)
             self.SubmitButton.setDisabled(False)
             self.lineEdit.setDisabled(False)
             self.delButton.setDisabled(False)
@@ -549,6 +577,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.download_btn_manager()
 
     def download_btn_manager(self):
+        if self.checkBox.checkState() and self.checkBox_2.checkState():
+            self.checkBox_3.setEnabled(True)
+        else:
+            self.checkBox_3.setEnabled(False)
         if ((self.checkBox.checkState() and ((self.chooseresbtn.isChecked() and self.vid_select_itag is not None) or
                                              self.bestresbtn.isChecked())) or (self.checkBox_2.checkState()
                                                                                and ((self.chooseresbtn_2.isChecked()
@@ -601,7 +633,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def download_handler(self):
         self.cancelDownloadButton.show()
-        self.conv_widget.setDisabled(True)
         self.clearButton.setDisabled(True)
         self.commandLinkButton.setDisabled(True)
         self.lineEdit.setDisabled(True)
@@ -690,6 +721,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.on_dl_finish()
         elif self.dl_mode == 2:
             _type = "audio"
+            file_1 = self.currentDownloadName
             if self.bestresbtn_2.isChecked():
                 self.thread_download_aud = KThread(target=self.dl_thread, args=(
                     self.ys.filter(type='audio').order_by("abr").desc().first(), "audio_",))
@@ -711,7 +743,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     logging.log(logging.ERROR, str(e))
                     self.signals.use_signal_str("main_window.progressBar.setMaximum(0)")
             logging.log(logging.INFO, "Download Finished !")
-            self.on_dl_finish()
+            if self.conv_settings[0]:
+                self.signals.use_signal_str("main_window.show_dialog('%s', '%s', '%s')" % (
+                    file_1, self.currentDownloadName, (os.path.splitext(file_1)[0] + ".mp4").split("video_")[1]))
+                self.on_dl_finish(False)
+            else:
+                self.on_dl_finish()
 
     def qactions(self, num):
         if num == 1:
@@ -767,11 +804,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logging.log(logging.WARN, "Download canceled by user !")
         self.on_dl_finish()
 
-    def on_dl_finish(self):
+    def on_dl_finish(self, show=True):
         self.signals.use_signal_str("main_window.cancelDownloadButton.hide()")
         self.signals.use_signal_str("main_window.progressBar.setMaximum(1000)")
         self.signals.use_signal_int(0)
-        self.signals.use_signal_str("main_window.conv_widget.setDisabled(False)")
         self.signals.use_signal_str("main_window.clearButton.setDisabled(False)")
         self.signals.use_signal_str("main_window.commandLinkButton.setDisabled(False)")
         self.signals.use_signal_str("main_window.lineEdit.setDisabled(False)")
@@ -785,7 +821,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.signals.use_signal_str("main_window.listWidget.setDisabled(False)")
         if self.checkBox_2.isChecked() and self.chooseresbtn_2.isChecked():
             self.signals.use_signal_str("main_window.listWidget_2.setDisabled(False)")
-        self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")[-2])
+        if show:
+            self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")
+            [-2])
 
 
 def log_listen_thread():
@@ -798,7 +836,6 @@ def log_listen_thread():
 
 log_thread = KThread(target=log_listen_thread)
 log_thread.start()
-
 
 app = QApplication(sys.argv)
 

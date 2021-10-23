@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'merging_dialogFJETZn.ui'
+## Form generated from reading UI file 'merging_dialogbJPVjC.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -20,17 +20,25 @@ class Ui_MergingDialog(object):
         MergingDialog.resize(507, 468)
         MergingDialog.setMinimumSize(QSize(507, 468))
         MergingDialog.setMaximumSize(QSize(507, 468))
-        self.textBrowser = QTextBrowser(MergingDialog)
-        self.textBrowser.setObjectName(u"textBrowser")
-        self.textBrowser.setGeometry(QRect(20, 70, 461, 351))
+        self.plainTextEdit = QPlainTextEdit(MergingDialog)
+        self.plainTextEdit.setObjectName(u"plainTextEdit")
+        self.plainTextEdit.setEnabled(True)
+        self.plainTextEdit.setGeometry(QRect(20, 70, 461, 351))
+        font = QFont()
+        font.setFamily(u"Consolas")
+        font.setPointSize(9)
+        self.plainTextEdit.setFont(font)
+        self.plainTextEdit.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.plainTextEdit.setReadOnly(True)
+        self.plainTextEdit.setCenterOnScroll(True)
         self.label = QLabel(MergingDialog)
         self.label.setObjectName(u"label")
         self.label.setGeometry(QRect(100, 10, 401, 41))
-        font = QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label.setFont(font)
+        font1 = QFont()
+        font1.setPointSize(16)
+        font1.setBold(True)
+        font1.setWeight(75)
+        self.label.setFont(font1)
         self.progressBar = QProgressBar(MergingDialog)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setGeometry(QRect(20, 433, 461, 20))
@@ -45,11 +53,7 @@ class Ui_MergingDialog(object):
 
     def retranslateUi(self, MergingDialog):
         MergingDialog.setWindowTitle(QCoreApplication.translate("MergingDialog", u"Dialog", None))
-        self.textBrowser.setHtml(QCoreApplication.translate("MergingDialog", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>", None))
+        self.plainTextEdit.setPlainText("")
         self.label.setText(QCoreApplication.translate("MergingDialog", u"Merging audio and video ...", None))
     # retranslateUi
 
