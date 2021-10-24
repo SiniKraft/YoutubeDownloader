@@ -252,6 +252,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
+        self.url = ""
         self.merging_state = 0
         self.merge_dialog = None
         self.conv_settings = conv_settings_l
@@ -297,6 +298,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
+
+    def __show(self, url):
+        self.url = url
+        self.show()
+        if self.url != "":
+            self.lineEdit.setText(url)
+            self.on_submit_btn(False)
 
     def show_dialog(self, file_1, file_2, output):
         self.merge_dialog = MergingDialog(self, file_1, file_2, output)
@@ -874,14 +882,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 def log_listen_thread():
     while True:
-        with open("log.txt", "w+") as log:
-            log.write(str(log_stream.getvalue().encode("utf-8")))  # Some youtube titles contains utf8 chars !!!
+        with open(os.path.join(pref_path, "log.txt").replace("\\", "/"), "w", encoding="utf-8") as \
+                log:
+            log.write(str(log_stream.getvalue()))  # Some youtube titles contains utf8 chars !!!
             log.close()
         time.sleep(2)
 
 
 log_thread = KThread(target=log_listen_thread)
-log_thread.start()
 
 app = QApplication(sys.argv)
 
@@ -891,13 +899,18 @@ set_style(app, selected_theme)
 
 main_window = MainWindow()
 
-main_window.show()
 
-exit_code = app.exec_()
+def run(_url=""):
+    log_thread.start()
+    main_window.__show(_url)
+    exit_code = app.exec_()
+    log_thread.kill()
+    with open(os.path.join(pref_path, "log.txt").replace("\\", "/"), "w", encoding="utf-8") as log:
+        log.write(str(log_stream.getvalue().encode("utf-8").decode("utf-8")))
+        log.close()
 
-log_thread.kill()
-with open("log.txt", "w+") as log:
-    log.write(str(log_stream.getvalue().encode("utf-8")))
-    log.close()
+    sys.exit(exit_code)
 
-sys.exit(exit_code)
+
+if __name__ == "__main__":
+    run()
