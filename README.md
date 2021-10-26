@@ -5,6 +5,7 @@ Go to the [latest release download page](https://github.com/SiniKraft/YoutubeDow
 ### Windows :  
 Download the setup to install easily, or extract the portable version.  
 Just run Youtube Downloader.  
+Warning: Currently merging works only on 64-bits architectures !  
 ### Others :  
 Download the [main source zip](https://sinikraft.github.io/website/magic/dllatest?repo_link=https://api.github.com/repos/SiniKraft/YoutubeDownloader/releases/latest)  
 Extract it and try to run qtapp.py  
