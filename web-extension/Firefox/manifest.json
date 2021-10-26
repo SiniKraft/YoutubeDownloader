@@ -2,7 +2,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "ytdl@sinikraft.github.io",
-      "update_url": "https://raw.githubusercontent.com/SiniKraft/YoutubeDownloader/master/web-extension/Firefox/manifest.json"
+      "update_url": "https://raw.githubusercontent.com/SiniKraft/YoutubeDownloader/master/web-extension/Firefox/update.json"
     }
   },
 
