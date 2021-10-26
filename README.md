@@ -9,7 +9,7 @@ Warning: Currently merging works only on 64-bits architectures !
 ### Others :  
 Download the [main source zip](https://sinikraft.github.io/website/magic/dllatest?repo_link=https://api.github.com/repos/SiniKraft/YoutubeDownloader/releases/latest)  
 Extract it and try to run qtapp.py  
-You'll need to install PySide2, qt-material and pytube (and ffmpeg for merging).  
+You'll need to install PySide2, qt-material and pytube (and python-ffmpeg for merging).  
 Should work on python 3.6 +  
 ### Extensions ?
 Currently, only Windows browsers are supported.  
