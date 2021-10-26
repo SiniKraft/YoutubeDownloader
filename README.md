@@ -10,3 +10,8 @@ Download the [main source zip](https://sinikraft.github.io/website/magic/dllates
 Extract it and try to run qtapp.py  
 You'll need to install PySide2, qt-material and pytube.  
 Should work on python 3.6 +  
+### Extensions ?
+Currently, only Windows browsers are supported.  
+I Highly recommend you to use Firefox, which is the only one respecting your privacy.  
+Just click on the Firefox-extension.xpi file and it should install.  
+For other browsers, download Chrome-Edge-Opera-and-more zip, extract it and follow instructions of the ReadMe file.  
