@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'main_windowBMhsdX.ui'
+## Form generated from reading UI file 'main_windowYzMhzN.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -122,7 +122,7 @@ class Ui_MainWindow(object):
         self.label_6 = QLabel(self.centralwidget)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setGeometry(QRect(0, 40, 131, 131))
-        self.label_6.setPixmap(QPixmap(u":/img/youtube_play1600.png"))
+        self.label_6.setPixmap(QPixmap(u":/img/icon-256.png"))
         self.label_6.setScaledContents(True)
         self.lineEdit = QLineEdit(self.centralwidget)
         self.lineEdit.setObjectName(u"lineEdit")

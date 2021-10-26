@@ -207,7 +207,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="logo.qrc">:/img/youtube_play1600.png</pixmap>
+     <pixmap resource="logo.qrc">:/img/icon-256.png</pixmap>
     </property>
     <property name="scaledContents">
      <bool>true</bool>

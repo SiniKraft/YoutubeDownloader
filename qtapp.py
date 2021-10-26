@@ -260,7 +260,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.cancelDownloadButton.hide()
         self.path_preference = path_preference
         self.clearButton.hide()
-        self.setWindowIcon(QIcon(QPixmap(u":/img/youtube_play1600.png")))
+        self.setWindowIcon(QIcon(QPixmap(u":/img/icon-256.png")))
         self.checkBox.setChecked(True)
         self.checkBox_2.setChecked(True)
         self.setup_connections()
