@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "ytdl@sinikraft.github.io": {
+      "updates": [
+        {
+          "version": "1.0",
+          "update_link": ""
+        },
+      ]
+    }
+  }
+}
