@@ -299,6 +299,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not sys.platform == "win32":
             self.actionInstall_extension_compatibility.setDisabled(True)
 
+        self.actionInstall_extension_compatibility.setVisible(False)
+
     def __show(self, url):
         self.url = url
         self.show()
