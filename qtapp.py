@@ -1,3 +1,4 @@
+import subprocess
 import sys
 import os
 import threading
@@ -21,7 +22,6 @@ from ui_convert_dialog import Ui_ConvertDialog
 from ui_merging_dialog import Ui_MergingDialog
 
 from pytube import YouTube
-
 
 class KThread(threading.Thread):
     """A subclass of KThread, with a kill()
@@ -171,8 +171,10 @@ class Communicate(QObject):
 class MergingDialog(QDialog, Ui_MergingDialog):
     def __init__(self, parent: "MainWindow", file_1, file_2, output):
         QDialog.__init__(self, parent=parent)
+        self.parent = parent
         self.setupUi(self)
         self.setWindowTitle("Merging files ...")
+        self.pushButton.clicked.connect(self.onClicked)
         parent.merging_state = 1  # merging ...
         self.files = (file_1, file_2)
         self.thread_convert = KThread(target=lambda: parent.convert_handler(file_1, file_2, output))
@@ -180,16 +182,30 @@ class MergingDialog(QDialog, Ui_MergingDialog):
         self.thread_update = KThread(target=lambda: self.update_thread(parent))
         self.thread_update.start()
 
+    def onClicked(self):
+        print(["cmd.exe", *self.parent.start_args])
+        subprocess.call(["cmd.exe", "/c", *self.parent.start_args])
+
     def closeEvent(self, event):
         if main_window.merging_state == 1:
-            event.ignore()
+            msgbox = QMessageBox(parent=self)
+            msgbox.setIcon(QMessageBox.Question)
+            msgbox.setWindowTitle("Youtube Downloader by Nicklor")
+            msgbox.setText("Cancel merging ?")
+            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            msgbox.exec_()
+            if msgbox.clickedButton() == msgbox.button(QMessageBox.Yes):
+                event.accept()
+            else:
+                event.ignore()
         else:
             event.accept()
 
     def update_thread(self, parent):
         while parent.merging_state == 1:
-            parent.signals.use_signal_str('main_window.merge_dialog.plainTextEdit.setPlainText(log_stream.getvalue()'
-                                          '.split("Starting merge with arguments: ")[-1])')
+            if not self.plainTextEdit.toPlainText() == log_stream.getvalue():
+                parent.signals.use_signal_str('main_window.merge_dialog.plainTextEdit.setPlainText(log_stream.getvalue()'
+                                            '.split("Starting merge with arguments: ")[-1])')
             time.sleep(0.01)
         self.close()
         os.remove(os.path.join(parent.path_preference, self.files[0]).replace("\\", "/"))
@@ -253,6 +269,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         QMainWindow.__init__(self)
         self.setupUi(self)
         self.url = ""
+        self.start_args = []
         self.merging_state = 0
         self.merge_dialog = None
         self.conv_settings = conv_settings_l
@@ -315,7 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.signals.show_msg("The video has been downloaded !\nMessage: %s" % log_stream.getvalue().split("\n")
             [-2])
 
-    def convert_handler(self, file_1: str, file_2: str, output: str):
+    def convert_handler(self, file_1: str, file_2: str, output: str,):
         # subprocess.run(["ffmpeg", "-i", file_1, "-1", file_2, "-crf", "0", "-qscale", "0", output],
         #                capture_output=True, text=True)
         import asyncio
@@ -325,7 +342,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     ffmpeg = FFmpeg().input(os.path.join(self.path_preference, file_1).replace("\\", "/")).output(
         #         os.path.join(self.path_preference, output).replace("\\", "/"), {"c:v": "copy", "c:a": "copy"})
         # else:
-        ffmpeg = FFmpeg().option("y").input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(
+        ffmpeg = FFmpeg("ffmpeg.exe").option("y").input(os.path.join(self.path_preference, file_1).replace("\\", "/")).input(
             os.path.join(
                 self.path_preference, file_2).replace("\\", "/")).output(os.path.join(self.path_preference, output)
                                                                          .replace("\\", "/"), {"c:v": "copy",
@@ -333,6 +350,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         @ffmpeg.on('start')
         def on_start(arguments):
+            self.start_args = arguments
+            print(arguments)
             logging.log(logging.INFO, 'Starting merge with arguments: ' + str(arguments))
 
         @ffmpeg.on('stderr')
@@ -369,7 +388,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.signals.show_msg("An error has been detected and merging was probably unsuccessful !\nThe log file has"
                                   " been added to your home folder.", "error")
 
-        loop = asyncio.new_event_loop()
+        try:
+            loop = asyncio.get_event_loop()
+        except:
+            loop = asyncio.new_event_loop()
         loop.run_until_complete(ffmpeg.execute())
         loop.close()
 
@@ -512,14 +534,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def download(self):
         try:
             yt = YouTube(self.lineEdit.text())
-            self.title_label.setText("Title : " + yt.title)
-            self.author_label.setText("Author : " + yt.author)
-            self.date_label.setText("Creation date : " + str(yt.publish_date.date()))
-            self.views_label.setText("Views : " + str('{:,}'.format(yt.views).replace(',', ' ')))
-            self.rating_label.setText("Rating : " + str(round(yt.rating, 2)) + u"/5 \u2605")
-            thumbnail = QPixmap()
-            thumbnail.loadFromData(urllib.request.urlopen(yt.thumbnail_url).read())
-            self.thumbnail_label.setPixmap(thumbnail)
+            try:
+                self.title_label.setText("Title : " + yt.title)
+            except:
+                self.title_label.setText("Title : -")
+            try:
+                self.author_label.setText("Author : " + yt.author)
+            except:
+                self.author_label.setText("Author : -")
+            try:
+                self.date_label.setText("Creation date : " + str(yt.publish_date.date()))
+            except:
+                self.date_label.setText("Creation date : -")
+            try:
+                self.views_label.setText("Views : " + str('{:,}'.format(yt.views).replace(',', ' ')))
+            except:
+                self.views_label.setText("Views : -")
+            try:
+                self.rating_label.setText("Rating : " + str(round(yt.rating)) + u"/5 \u2605")
+            except:
+                self.rating_label.setText("Rating : -")
+            try:
+                thumbnail = QPixmap()
+                import urllib.parse
+                thumbnail.loadFromData(urllib.request.urlopen("https://external-content.duckduckgo.com/iu/?u=" + urllib.parse.quote(yt.thumbnail_url, safe="")).read())
+                self.thumbnail_label.setPixmap(thumbnail)
+            except:
+                pass
             self.ys = yt.streams
             tmplist = []
             for x in self.ys.filter(type='video').order_by("resolution").desc():
@@ -539,6 +580,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # win.withdraw()
             # tkinter.messagebox.showerror("Error", str(e))
             # win.destroy()
+            import traceback
+            traceback_str = ''.join(traceback.format_tb(e.__traceback__))
+            print(traceback_str)
             self.signals.show_msg(str(e), "error")
             self.on_submit_btn(True, True)
 

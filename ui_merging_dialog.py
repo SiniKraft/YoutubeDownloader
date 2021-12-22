@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'merging_dialogbJPVjC.ui'
+## Form generated from reading UI file 'merging_dialogxGpLsO.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.5
 ##
@@ -45,6 +45,9 @@ class Ui_MergingDialog(object):
         self.progressBar.setMaximum(0)
         self.progressBar.setValue(0)
         self.progressBar.setTextVisible(False)
+        self.pushButton = QPushButton(MergingDialog)
+        self.pushButton.setObjectName(u"pushButton")
+        self.pushButton.setGeometry(QRect(4, 20, 81, 23))
 
         self.retranslateUi(MergingDialog)
 
@@ -55,5 +58,6 @@ class Ui_MergingDialog(object):
         MergingDialog.setWindowTitle(QCoreApplication.translate("MergingDialog", u"Dialog", None))
         self.plainTextEdit.setPlainText("")
         self.label.setText(QCoreApplication.translate("MergingDialog", u"Merging audio and video ...", None))
+        self.pushButton.setText(QCoreApplication.translate("MergingDialog", u"Not Working ?", None))
     # retranslateUi
 
