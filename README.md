@@ -1,5 +1,5 @@
 # Youtube Downloader  
-A simple YouTube downloader writed with PySide2 allowing you to select your video or/and audio stream and to merge them.  
+A simple YouTube downloader wrote with PySide2 allowing you to select your video or/and audio stream and to merge them.  
 ## How to Download ?  
 Go to the [latest release download page](https://github.com/SiniKraft/YoutubeDownloader/releases)  
 ### Windows :  
